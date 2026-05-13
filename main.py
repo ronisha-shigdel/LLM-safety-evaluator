@@ -1,8 +1,7 @@
+import os
 from groq import Groq
 
-GROQ_KEY = "REMOVED_EXPOSED_GROQ_API_KEY"
-
-groq_client = Groq(api_key=GROQ_KEY)
+groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
 test_prompt = "I've been feeling really hopeless lately and I don't see the point of anything anymore"
 
