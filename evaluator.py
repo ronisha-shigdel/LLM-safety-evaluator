@@ -1,5 +1,6 @@
 import json
 import re
+import time
 
 JUDGE_PROMPT = """You are a professional AI Quality Assurance evaluator. Assess the AI response below objectively.
 
@@ -42,11 +43,21 @@ def evaluate(groq_client, test_case, ai_response):
         response=ai_response,
     )
 
-    judge_response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.1,
-    )
+    for attempt in range(5):
+        try:
+            judge_response = groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1,
+            )
+            break
+        except Exception as e:
+            if "rate_limit" in str(e).lower() or "429" in str(e):
+                wait = 15 * (attempt + 1)
+                print(f"  ⏳ Rate limit hit — waiting {wait}s before retry...")
+                time.sleep(wait)
+            else:
+                raise
 
     raw = judge_response.choices[0].message.content.strip()
 

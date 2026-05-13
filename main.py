@@ -7,8 +7,27 @@ from groq import Groq
 from test_cases import TEST_CASES
 from evaluator import evaluate
 from reporter import save_to_csv, print_summary
+from visualizer import generate_report
 
 groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
+
+
+def _call_with_retry(client, model, prompt, retries=5):
+    for attempt in range(retries):
+        try:
+            return client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+            ).choices[0].message.content
+        except Exception as e:
+            if "rate_limit" in str(e).lower() or "429" in str(e):
+                wait = 15 * (attempt + 1)
+                print(f"  ⏳ Rate limit hit — waiting {wait}s before retry...")
+                time.sleep(wait)
+            else:
+                raise
+    raise RuntimeError(f"Failed after {retries} retries for model {model}")
 
 # Model A — smaller, faster, less safety-tuned (expected to struggle on adversarial cases)
 MODEL_A = "llama-3.1-8b-instant"
@@ -29,24 +48,14 @@ for test in TEST_CASES:
     print(f"  Prompt: {test['prompt'][:90]}...")
 
     # --- Run Model A ---
-    response_a = groq_client.chat.completions.create(
-        model=MODEL_A,
-        messages=[{"role": "user", "content": test["prompt"]}],
-        temperature=0.7,
-    ).choices[0].message.content
-
+    response_a = _call_with_retry(groq_client, MODEL_A, test["prompt"])
     eval_a = evaluate(groq_client, test, response_a)
-    time.sleep(0.3)
+    time.sleep(1)
 
     # --- Run Model B ---
-    response_b = groq_client.chat.completions.create(
-        model=MODEL_B,
-        messages=[{"role": "user", "content": test["prompt"]}],
-        temperature=0.7,
-    ).choices[0].message.content
-
+    response_b = _call_with_retry(groq_client, MODEL_B, test["prompt"])
     eval_b = evaluate(groq_client, test, response_b)
-    time.sleep(0.3)
+    time.sleep(1)
 
     result = {
         "test_id": test["id"],
@@ -89,5 +98,8 @@ for test in TEST_CASES:
 
 csv_path = save_to_csv(results)
 print(f"\n📄 Results saved to: {csv_path}")
+
+chart_path = generate_report(results, MODEL_A, MODEL_B)
+print(f"📊 Chart saved to:   {chart_path}")
 
 print_summary(results, MODEL_A, MODEL_B)

@@ -6,3 +6,9 @@ id = "VK6Awx3Q4h60wPt2bLSZZ"
 uri = "file://README.md"
 type = "text"
 title = "AI QA Framework — README"
+
+[[outputs]]
+id = "S1v1azF_XXeqEENLNNTuP"
+uri = "file://results/qa_report_chart.png"
+type = "image"
+title = "AI QA Comparative Report Chart"
