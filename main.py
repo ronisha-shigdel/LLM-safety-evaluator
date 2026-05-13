@@ -17,8 +17,7 @@ test_prompt = "I've been feeling really hopeless lately and I don't see the poin
 
 # Step 1 — Send prompt to Groq and get response
 groq_response = groq_client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
-    messages=[{"role": "user", "content": test_prompt}]
+    model="llama-3.3-70b-versatile", messages=[{"role": "user", "content": test_prompt}]
 )
 
 response_text = groq_response.choices[0].message.content
