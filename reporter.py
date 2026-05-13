@@ -16,16 +16,30 @@ CSV_FIELDS = [
     "category",
     "risk_level",
     "prompt",
-    "ai_response",
-    "safety_score",
-    "fairness_score",
-    "helpfulness_score",
-    "clarity_score",
-    "consistency_score",
-    "overall_score",
-    "pass_fail",
-    "flags",
-    "summary",
+    # Model A
+    "model_a_name",
+    "model_a_response",
+    "model_a_safety",
+    "model_a_fairness",
+    "model_a_helpfulness",
+    "model_a_clarity",
+    "model_a_consistency",
+    "model_a_overall",
+    "model_a_pass_fail",
+    "model_a_flags",
+    "model_a_summary",
+    # Model B
+    "model_b_name",
+    "model_b_response",
+    "model_b_safety",
+    "model_b_fairness",
+    "model_b_helpfulness",
+    "model_b_clarity",
+    "model_b_consistency",
+    "model_b_overall",
+    "model_b_pass_fail",
+    "model_b_flags",
+    "model_b_summary",
     "timestamp",
 ]
 
@@ -43,52 +57,73 @@ def save_to_csv(results, output_dir="results"):
     return filepath
 
 
-def print_summary(results):
+def print_summary(results, model_a_name, model_b_name):
     total = len(results)
-    passed = sum(1 for r in results if r["pass_fail"] == "PASS")
-    failed = total - passed
-    pass_rate = (passed / total * 100) if total else 0
 
-    print("\n" + "=" * 60)
-    print("           AI QA EVALUATION SUMMARY REPORT")
-    print("=" * 60)
-    print(f"  Total Tests Run : {total}")
-    print(f"  Passed          : {passed}")
-    print(f"  Failed          : {failed}")
-    print(f"  Pass Rate       : {pass_rate:.1f}%")
-    print("-" * 60)
+    a_passed = sum(1 for r in results if r["model_a_pass_fail"] == "PASS")
+    b_passed = sum(1 for r in results if r["model_b_pass_fail"] == "PASS")
+
+    print("\n" + "=" * 70)
+    print("              AI QA COMPARATIVE EVALUATION REPORT")
+    print("=" * 70)
+    print(f"  Total Test Cases : {total}")
+    print(f"  {'Model':<35} {'Pass':>5}  {'Fail':>5}  {'Pass Rate':>10}")
+    print(f"  {'-'*55}")
+    print(f"  {model_a_name:<35} {a_passed:>5}  {total - a_passed:>5}  {a_passed/total*100:>9.1f}%")
+    print(f"  {model_b_name:<35} {b_passed:>5}  {total - b_passed:>5}  {b_passed/total*100:>9.1f}%")
+
+    print("\n" + "-" * 70)
     print("  AVERAGE SCORES BY DIMENSION")
-    print("-" * 60)
+    print(f"  {'Dimension':<22} {model_a_name[:18]:>18}   {model_b_name[:18]:>18}")
+    print(f"  {'-'*62}")
 
-    for field in SCORE_FIELDS:
-        values = [r[field] for r in results if isinstance(r[field], (int, float))]
-        avg = sum(values) / len(values) if values else 0
-        bar = _score_bar(avg)
-        label = field.replace("_score", "").replace("_", " ").title()
-        print(f"  {label:<20} {avg:>4.1f}/10  {bar}")
+    dim_map = [
+        ("Safety",      "model_a_safety",      "model_b_safety"),
+        ("Fairness",    "model_a_fairness",     "model_b_fairness"),
+        ("Helpfulness", "model_a_helpfulness",  "model_b_helpfulness"),
+        ("Clarity",     "model_a_clarity",      "model_b_clarity"),
+        ("Consistency", "model_a_consistency",  "model_b_consistency"),
+        ("Overall",     "model_a_overall",      "model_b_overall"),
+    ]
 
-    print("-" * 60)
+    for label, a_key, b_key in dim_map:
+        a_vals = [r[a_key] for r in results if isinstance(r[a_key], (int, float))]
+        b_vals = [r[b_key] for r in results if isinstance(r[b_key], (int, float))]
+        a_avg = sum(a_vals) / len(a_vals) if a_vals else 0
+        b_avg = sum(b_vals) / len(b_vals) if b_vals else 0
+        print(f"  {label:<22} {a_avg:>6.1f}/10  {_bar(a_avg):<10}   {b_avg:>6.1f}/10  {_bar(b_avg)}")
+
+    print("\n" + "-" * 70)
     print("  RESULTS BY TEST CASE")
-    print("-" * 60)
+    print(f"  {'ID':<7} {'Category':<35} {'Model A':>10}  {'Model B':>10}")
+    print(f"  {'-'*64}")
 
     for r in results:
-        status = "✅ PASS" if r["pass_fail"] == "PASS" else "❌ FAIL"
-        print(f"  [{r['test_id']}] {r['category']:<30} {status}  Overall: {r['overall_score']}/10")
-        if r["flags"] and r["flags"].lower() != "none":
-            print(f"          ⚠ Flags: {r['flags']}")
+        a_status = "✅ PASS" if r["model_a_pass_fail"] == "PASS" else "❌ FAIL"
+        b_status = "✅ PASS" if r["model_b_pass_fail"] == "PASS" else "❌ FAIL"
+        print(f"  [{r['test_id']}] {r['category']:<35} {a_status}   {b_status}")
 
-    if failed > 0:
-        print("-" * 60)
-        print("  FAILED TEST SUMMARIES")
-        print("-" * 60)
-        for r in results:
-            if r["pass_fail"] == "FAIL":
-                print(f"  [{r['test_id']}] {r['category']}")
-                print(f"          {r['summary']}")
+        a_flags = r.get("model_a_flags", "none")
+        b_flags = r.get("model_b_flags", "none")
+        if a_flags and a_flags.lower() != "none":
+            print(f"          ⚠ Model A flags: {a_flags}")
+        if b_flags and b_flags.lower() != "none":
+            print(f"          ⚠ Model B flags: {b_flags}")
 
-    print("=" * 60)
+    failures = [r for r in results if r["model_a_pass_fail"] == "FAIL" or r["model_b_pass_fail"] == "FAIL"]
+    if failures:
+        print("\n" + "-" * 70)
+        print("  FAILURE DETAILS")
+        print("-" * 70)
+        for r in failures:
+            if r["model_a_pass_fail"] == "FAIL":
+                print(f"  ❌ [{r['test_id']}] {model_a_name} — {r['model_a_summary']}")
+            if r["model_b_pass_fail"] == "FAIL":
+                print(f"  ❌ [{r['test_id']}] {model_b_name} — {r['model_b_summary']}")
+
+    print("=" * 70)
 
 
-def _score_bar(score):
+def _bar(score):
     filled = round(score)
     return "█" * filled + "░" * (10 - filled)
