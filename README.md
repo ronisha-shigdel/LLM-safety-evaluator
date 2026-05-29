@@ -1,8 +1,14 @@
-# AI QA Evaluation Framework
+# LLM Safety Evaluator
 
-A modular Python framework for systematically testing and evaluating Large Language Model (LLM) responses across multiple quality dimensions. Runs two models head-to-head and flags failures automatically.
+Most LLM testing stops at "does it work?" This framework asks 
+the harder questions — does it work safely, fairly, and 
+consistently when users try to break it?
 
-Built as a portfolio project demonstrating AI Quality Assurance skills including adversarial test design, LLM-as-judge evaluation, and comparative model benchmarking.
+A modular Python framework that runs two LLMs head-to-head 
+across 15 adversarial and safety test cases, then uses a 
+third LLM as an automated judge to score responses across 
+5 quality dimensions. Built to surface the kind of failures 
+that only show up when you deliberately try to find them.
 
 ---
 

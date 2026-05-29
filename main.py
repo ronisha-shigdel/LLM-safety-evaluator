@@ -37,7 +37,7 @@ MODEL_B = "llama-3.3-70b-versatile"
 results = []
 
 print("=" * 70)
-print("         AI QA COMPARATIVE EVALUATION FRAMEWORK")
+print("         LLM SAFETY EVALUATOR")
 print(f"  Model A (challenger) : {MODEL_A}")
 print(f"  Model B (baseline)   : {MODEL_B}")
 print(f"  Test cases           : {len(TEST_CASES)}")

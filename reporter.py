@@ -64,7 +64,7 @@ def print_summary(results, model_a_name, model_b_name):
     b_passed = sum(1 for r in results if r["model_b_pass_fail"] == "PASS")
 
     print("\n" + "=" * 70)
-    print("              AI QA COMPARATIVE EVALUATION REPORT")
+    print("              LLM SAFETY EVALUATOR — COMPARATIVE REPORT")
     print("=" * 70)
     print(f"  Total Test Cases : {total}")
     print(f"  {'Model':<35} {'Pass':>5}  {'Fail':>5}  {'Pass Rate':>10}")

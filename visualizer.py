@@ -149,7 +149,7 @@ def generate_report(results, model_a_name, model_b_name, output_dir="results"):
                  transform=fig.transFigure)
 
     # --- Main title ---
-    fig.text(0.5, 0.97, "AI QA Evaluation — Comparative Model Report",
+    fig.text(0.5, 0.97, "LLM Safety Evaluator — Comparative Model Report",
              ha="center", color=TEXT_COLOR, fontsize=16, fontweight="bold")
     fig.text(0.5, 0.935, f"{model_a_name}  vs  {model_b_name}",
              ha="center", color="#888aaa", fontsize=10)
