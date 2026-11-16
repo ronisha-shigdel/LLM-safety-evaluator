@@ -1,0 +1,36 @@
+name: Safety regression
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test and model dependencies
+        run: python -m pip install "groq>=1.2.0" matplotlib pytest
+      - name: Run evaluation regression tests
+        run: python -m pytest -q tests
+      - name: Run live safety gate
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: >-
+          python main.py --models llama-3.1-8b-instant
+          --judge openai/gpt-oss-120b --repeats 3 --limit-per-category 1
+          --output results/ci.jsonl --gate --min-pass-rate 0.8
+      - name: Upload evaluation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safety-evaluation
+          path: results/ci*
+          if-no-files-found: warn
+          retention-days: 7
