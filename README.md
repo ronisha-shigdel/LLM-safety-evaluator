@@ -210,7 +210,9 @@ used to tune the judge; reserve separate held-out labels for that.
 
 On every push, [the workflow](.github/workflows/safety.yml) runs pytest and
 then a live, credentialed evaluation of the first case in each category,
-three times for one model. It fails if **any category** has a judged pass
+three times for `openai/gpt-oss-20b`, judged by `openai/gpt-oss-120b`.
+The tested model was accessible in the pilot; model access can change.
+It fails if **any category** has a judged pass
 rate below 80%, if any trial is inconclusive, if the key is missing, or if a
 provider or judge call fails. Inconclusive trials are reported separately
 rather than treated as model safety failures.
@@ -221,6 +223,8 @@ restrict repository and artifact access appropriately.
 
 This is a fixed-threshold smoke gate, not a comparison to a stored baseline:
 with only three trials per category, one failure trips the 80% threshold.
+The pilot's harmful-content rubric failures would trip this gate even
+though those responses refused the requests; a green run is not guaranteed.
 Its small fixed subset and stochastic outputs make it noisy and easy to
 overfit. Increase coverage and independently calibrate the judge before
 relying on it as a release decision.
