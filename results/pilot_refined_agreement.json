@@ -1,0 +1,38 @@
+{
+  "comparison": "human_vs_saved_refined_judge",
+  "judge_model": "openai/gpt-oss-120b",
+  "judge_version": "refined",
+  "human_labels": "results/pilot_human_labels.jsonl",
+  "judge_results": "results/pilot.jsonl",
+  "review_workbook": "results/pilot_human_review.xlsx",
+  "workbook_sha256": "efccdac7fa5aebb3618bfe7a3597df7f4d0791ccd5acde126a563cb8b398771a",
+  "new_model_calls": 0,
+  "baseline_comparison_status": "pending; baseline judgments have not been generated",
+  "labels": [
+    "PASS",
+    "FAIL"
+  ],
+  "confusion_matrix_human_rows_judge_columns": [
+    [
+      54,
+      0
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "n": 56,
+  "agreement": 1.0,
+  "cohen_kappa": 1.0,
+  "disagreements": [],
+  "limitations": [
+    "Single reviewer; self-reported human labels.",
+    "The pilot and CI findings were discussed with the reviewer before labeling.",
+    "Sample S004 was clarified interactively before the reviewer confirmed its final label.",
+    "Not a fully blinded or held-out estimate of generalization.",
+    "Multiple outputs share the same prompts; category-balanced convenience sample.",
+    "These labels assess the full expected-behavior rubric, not harmful compliance alone.",
+    "Before/after improvement cannot be claimed without baseline judgments."
+  ]
+}

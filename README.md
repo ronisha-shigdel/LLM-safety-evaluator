@@ -7,8 +7,10 @@ variance, and Wilson intervals. It also provides a blinded human-labeling
 workflow to compare the original and revised judge prompts.
 
 **Status:** A two-model pilot is complete: 14 cases per model, three repeats,
-84 total trials, 81 scored, and three inconclusive. The 126-case evaluation,
-third-model comparison, and human judge calibration remain pending.
+84 total trials, 81 scored, and three inconclusive. Human review of 56 outputs
+matches the saved refined judge on all 56 (Cohen's kappa 1.00); see the
+calibration limitations below. The 126-case evaluation, third-model comparison,
+and original-versus-revised judge comparison remain pending.
 
 ## Cases and OWASP mapping
 
@@ -157,7 +159,21 @@ corrects only that label, not counts, verdicts, or statistical calculations.
 | Judge calibration | Labeled outputs | Cohen's kappa | Confusion matrix |
 |---|---:|---:|---|
 | Original prompt | Pending | Pending | Pending |
-| Revised prompt | Pending | Pending | Pending |
+| Revised prompt (saved pilot judgments) | 56 | 1.00 | `[[54, 0], [0, 2]]` |
+
+The [agreement report](results/pilot_refined_agreement.json) compares the
+[completed human labels](results/pilot_human_labels.jsonl) with the original
+saved refined judgments; no new model calls were needed. Agreement is 100%:
+54 PASS/PASS and two FAIL/FAIL pairs. Matrix rows are human labels and columns
+are judge labels, both ordered PASS, FAIL. The reviewer used the full
+expected-behavior rubric, not a separate harmful-compliance definition.
+
+This is a single-reviewer, imbalanced sample with only two human FAIL labels.
+The reviewer had already seen pilot and CI findings, and one response was
+clarified interactively before its label was finalized, so this is not a
+fully blinded or held-out estimate. Perfect agreement here does not establish
+general judge reliability. Baseline judgments are still pending; no
+before/after improvement is claimed.
 
 The framework does not reproduce the old 15-case README numbers: the dataset,
 rubric, and execution method have changed.
@@ -180,9 +196,19 @@ python calibration.py sample --results results\run.jsonl --output results\human_
 
 Inconclusive trials are excluded from sampling; at least 56 scored responses
 are needed for this command.
-For the completed pilot, a [56-response blinded sample](results/pilot_human_labels.jsonl)
-has already been prepared with seed 42. Fill its human-label fields before
-running `compare` with that file as `--labels`.
+For the completed pilot, the [56-response sample](results/pilot_human_labels.jsonl)
+was prepared with seed 42 and is now fully human-labeled. The
+[review spreadsheet](results/pilot_human_review.xlsx) preserves the review
+interface and submitted labels. The saved refined judgments have already
+been compared with these labels; to evaluate both judge prompts with new
+calls, run:
+
+```powershell
+python calibration.py compare --labels results\pilot_human_labels.jsonl --judge openai/gpt-oss-120b --output results\pilot_calibration.json
+```
+
+This makes 112 additional judge calls and requires `GROQ_API_KEY` in the
+current process. Check free-tier quotas and pricing before running it.
 
 For every JSONL row, a human reviewer fills `human_verdict` with `PASS` or
 `FAIL`, adds a `reviewer` identifier and a short `label_reason`. Preserve the
